@@ -1,0 +1,13 @@
+[package]
+name = "dpy"
+version = "0.0.1"
+edition = "2021"
+description = "A simple transpiler to translate dutch python like code to working python code."
+license = "MIT"
+license-file = "LICENSE"
+repository = "https://github.com/Arthurdw/DutchPython"
+authors = ["Arthurdw <contact@arthurdw.com>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
