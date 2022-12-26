@@ -1,12 +1,12 @@
 [package]
 name = "dpy"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "A simple transpiler to translate dutch python like code to working python code."
 license = "MIT"
 repository = "https://github.com/Arthurdw/DutchPython"
 authors = ["Arthurdw <contact@arthurdw.com>"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+serde_json = "1.0.91"
+which = "4.3.0"

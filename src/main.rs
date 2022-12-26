@@ -1,68 +1,27 @@
-use std::{
-    fs::File,
-    io::{Read, Write},
-    os::unix::process::CommandExt,
-    process::Command,
-};
+#[cfg(unix)]
+use std::os::unix::process::CommandExt;
+use std::process::Command;
+use std::process::exit;
 
-fn get_translations<'a>() -> Vec<(&'a str, &'a str)> {
-    let mut translations = vec![
-        ("def", "functie"),
-        ("if", "indien"),
-        ("else", "anders"),
-        ("elif", "anders indien"),
-        ("False", "onwaar"),
-        ("True", "waar"),
-        ("None", "niks"),
-        ("and", "en"),
-        ("as", "als"),
-        ("assert", "vergelijk"),
-        ("break", "onderbreek"),
-        ("class", "klas"),
-        ("continue", "ga door"),
-        ("del", "verwijder"),
-        ("except", "uitzondering"),
-        ("finally", "uiteindelijk"),
-        ("for", "voor elke"),
-        ("from", "uit"),
-        ("global", "globaal"),
-        ("import", "importeer"),
-        ("in", "in"),
-        ("is", "is"),
-        ("lambda", "anonieme functie"),
-        ("nonlocal", "niet lokaal"),
-        ("not", "niet"),
-        ("or", "of"),
-        ("pass", "laat door"),
-        ("raise", "uitzonder"),
-        ("return", "retour"),
-        ("try", "probeer"),
-        ("while", "terwijl"),
-        ("with", "met"),
-        ("yield", "beng op"),
-        ("input", "vraag"),
-        ("print", "toon"),
-        ("range", "bereik"),
-    ];
+use which::which;
+
+use util::file_util;
+
+use crate::util::json;
+
+mod util;
+
+static VERSION: &str = env!("CARGO_PKG_VERSION");
+static AUTHOR: &str = env!("CARGO_PKG_AUTHORS");
+
+const TRANSLATIONS: &str = include_str!("../data/pairs.json");
+
+fn get_translations() -> Vec<(String, String)> {
+    let json = json::parse_json(TRANSLATIONS);
+    let mut translations = json::into_collection(json::into_hashmap(json));
     translations.sort_by(|a, b| a.1.len().cmp(&b.1.len()).reverse());
 
     translations
-}
-
-fn read_file(path: &str) -> String {
-    let mut file =
-        File::open(path).expect("Kon het gevraagde bestand niet lezen, vraag hulp aan een coach!");
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)
-        .expect("Kon de text in het bestand niet als text lezen, vraag hulp aan een coach!");
-    contents
-}
-
-fn write_file(path: &str, contents: &str) {
-    let mut file =
-        File::create(path).expect("Kon geen nieuw bestand aanmaken, vraag hulp aan een coach!");
-    file.write_all(contents.as_bytes())
-        .expect("Kon geen text in het bestand schrijven, vraag hulp aan een coach!")
 }
 
 fn get_passed_arguments() -> Vec<String> {
@@ -74,6 +33,7 @@ fn main() {
     let args = get_passed_arguments();
 
     if args.len() < 2 {
+        println!("DutchPython - {} - {}\n", VERSION, AUTHOR);
         println!("Je moet de bestandsnaam van je applicatie meegeven.");
         println!("(vertaal <bestandsnaam>)");
         println!("Voorbeeld: vertaal applicatie.dpy");
@@ -81,7 +41,7 @@ fn main() {
     }
 
     let filename = &args[1];
-    let mut content = read_file(&filename);
+    let mut content = file_util::read_file(&filename);
     for (english, dutch) in translations {
         content = content.replace(&dutch, &english);
     }
@@ -93,6 +53,19 @@ fn main() {
 
     let out_filename = format!("{}.py", filename_without_ext);
 
-    write_file(&out_filename, content.as_str());
-    Command::new("python").arg(&out_filename).exec();
+    file_util::write_file(&out_filename, content.as_str());
+
+    let python_path = which("python").expect("Kon geen Python interpreter vinden, vraag hulp aan een coach!");
+
+    #[cfg(unix)]
+    Command::new(python_path).arg(&out_filename).exec();
+
+    #[cfg(not(unix))]
+    {
+        // Since we cannot replace our current process with the python process,
+        // we will bubble up the exit code of the python process and run it as a child process.
+        let mut child = Command::new(python_path).arg(&out_filename).spawn().unwrap();
+        let exit_status = child.wait().unwrap();
+        exit(exit_status.code().unwrap());
+    }
 }

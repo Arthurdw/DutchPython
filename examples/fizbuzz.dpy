@@ -1,0 +1,12 @@
+functie fizbuz():
+    voor elke i in bereik(1, 101):
+        indien i % 3 == 0 en i % 5 == 0:
+            toon("FizzBuzz")
+        anders indien i % 3 == 0:
+            toon("Fizz")
+        anders indien i % 5 == 0:
+            toon("Buzz")
+        anders:
+            toon(i)
+
+fizbuz()
