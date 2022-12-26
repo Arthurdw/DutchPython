@@ -6,6 +6,7 @@ description = "A simple transpiler to translate dutch python like code to workin
 license = "MIT"
 repository = "https://github.com/Arthurdw/DutchPython"
 authors = ["Arthurdw <contact@arthurdw.com>"]
+readme = "README.md"
 
 [dependencies]
 serde_json = "1.0.91"
