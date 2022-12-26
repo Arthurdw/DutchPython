@@ -1,6 +1,7 @@
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::process::Command;
+#[cfg(not(unix))]
 use std::process::exit;
 
 use which::which;
