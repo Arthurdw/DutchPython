@@ -1,0 +1,14 @@
+uit util.minecraft importeer Bot, waneer
+
+bot = Bot(naam="robot")
+
+
+@waneer("bericht")
+functie bericht(gebruikersnaam):
+    indien gebruikersnaam == bot.naam:
+        retour
+
+    bot.zeg(f"Hallo, {gebruikersnaam}!")
+
+
+bot.start()
